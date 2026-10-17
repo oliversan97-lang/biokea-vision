@@ -1,0 +1,18 @@
+# Python
+__pycache__/
+*.pyc
+
+# Raw captures and detection output
+captures/
+results/
+
+# Per-setup background references (large, machine-specific)
+bg.png
+bg_old.png
+*.npy
+ref_*/
+
+# Runtime state and logs
+state.json
+*.log
+.lgd-nfy*
