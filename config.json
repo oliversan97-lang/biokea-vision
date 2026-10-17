@@ -1,9 +1,9 @@
 {
  "roi_px": [
-  240,
-  0,
-  1400,
-  1080
+  206,
+  106,
+  1326,
+  1016
  ],
  "bulb_pins": {
   "seed": 10,
@@ -11,5 +11,12 @@
   "rice": 27,
   "noodle": 17
  },
- "live_on_start": true
+ "live_on_start": true,
+ "ignore_circles_px": [
+  [
+   851,
+   473,
+   36
+  ]
+ ]
 }

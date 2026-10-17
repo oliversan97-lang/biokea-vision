@@ -230,6 +230,21 @@ bulbs = Bulbs(tv.cfg.get("bulb_pins"), active_high=tv.cfg.get("bulb_active_high"
 live = {"on": bool(tv.cfg.get("live_on_start", False)), "jpg": None, "summary": None, "t": 0.0, "fps": 0.0}
 
 
+def camera_view(ov, res, frame=None):
+    """Draw results where things really are: undo the marker alignment (calibration pose -> camera)."""
+    M = (res.get("align") or {}).get("M")
+    if not M or tv.calib.get("roi") != "frame":
+        return ov
+    h, w = ov.shape[:2]
+    back = cv2.warpAffine(ov, np.array(M), (w, h), flags=cv2.INTER_LINEAR | cv2.WARP_INVERSE_MAP,
+                          borderMode=cv2.BORDER_CONSTANT, borderValue=(0, 0, 0))
+    if frame is not None and frame.shape == ov.shape:    # fill uncovered corners with the live frame
+        holes = cv2.warpAffine(np.ones((h, w), np.uint8), np.array(M), (w, h),
+                               flags=cv2.INTER_NEAREST | cv2.WARP_INVERSE_MAP, borderValue=0) == 0
+        back[holes] = frame[holes]
+    return back
+
+
 def live_loop():
     """Live mode: detect continuously, keep the newest overlay in memory, drive the bulbs.
 
@@ -243,11 +258,12 @@ def live_loop():
             continue
         try:
             t0 = time.time()
-            res, rect, mask, objs = tv.analyze(cam.frame(), frame="live")
+            frame = cam.frame()
+            res, rect, mask, objs = tv.analyze(frame, frame="live")
             hist = (hist + [present_categories(res)])[-2:]
             cats = set.intersection(*hist) if len(hist) == 2 else set()
             res["bulbs"] = bulbs.show(cats)
-            ov = V.draw_overlay(rect, objs, res, tv.cfg)
+            ov = V.draw_summary(camera_view(V.draw_overlay(rect, objs, res, tv.cfg, bar=False), res, frame), res)
             h, w = ov.shape[:2]
             ok, jpg = cv2.imencode(".jpg", cv2.resize(ov, (w * 2 // 3, h * 2 // 3)), [cv2.IMWRITE_JPEG_QUALITY, 75])
             live.update(jpg=jpg.tobytes(), summary=res["summary"], t=time.time(),
@@ -281,7 +297,7 @@ def detect(tag="frame", highlight=None):
     res, rect, mask, objs = tv.analyze(img, frame=os.path.relpath(path, ROOT))
     res["elapsed_s"] = round(time.time() - t0, 2)
     res["bulbs"] = bulbs.show(present_categories(res))
-    ov = V.draw_overlay(rect, objs, res, tv.cfg, highlight=highlight)
+    ov = V.draw_summary(camera_view(V.draw_overlay(rect, objs, res, tv.cfg, highlight=highlight, bar=False), res, img), res)
     cv2.imwrite(os.path.join(RES, name + "_overlay.jpg"), ov, [cv2.IMWRITE_JPEG_QUALITY, 85])
     with open(os.path.join(RES, name + ".json"), "w") as f:
         json.dump(res, f, indent=1)

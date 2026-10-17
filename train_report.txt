@@ -1,73 +1,67 @@
-samples per class: {'seed': 87, 'couscous': 100, 'rice': 68, 'noodle': 12}
-== size_tree: 5-fold accuracy 0.876
+samples per class: {'seed': 74, 'couscous': 94, 'rice': 64, 'noodle': 13}
+== size_tree: 5-fold accuracy 0.882
               precision    recall  f1-score   support
 
-    couscous      0.870     0.870     0.870       100
-      noodle      0.833     0.833     0.833        12
-        rice      0.884     0.897     0.891        68
-        seed      0.884     0.874     0.879        87
+    couscous      0.822     0.883     0.851        94
+      noodle      1.000     1.000     1.000        13
+        rice      0.954     0.969     0.961        64
+        seed      0.879     0.784     0.829        74
 
-    accuracy                          0.876       267
-   macro avg      0.868     0.868     0.868       267
-weighted avg      0.876     0.876     0.876       267
+    accuracy                          0.882       245
+   macro avg      0.914     0.909     0.910       245
+weighted avg      0.883     0.882     0.881       245
 confusion (rows=true, cols=pred) ['seed', 'couscous', 'rice', 'noodle']
-[[76  9  2  0]
- [ 9 87  4  0]
- [ 1  4 61  2]
- [ 0  0  2 10]]
+[[58 16  0  0]
+ [ 8 83  3  0]
+ [ 0  2 62  0]
+ [ 0  0  0 13]]
 
-== size_rf: 5-fold accuracy 0.888
+== size_rf: 5-fold accuracy 0.894
               precision    recall  f1-score   support
 
-    couscous      0.879     0.870     0.874       100
-      noodle      0.857     1.000     0.923        12
-        rice      0.926     0.926     0.926        68
-        seed      0.872     0.862     0.867        87
+    couscous      0.854     0.872     0.863        94
+      noodle      1.000     1.000     1.000        13
+        rice      0.969     0.969     0.969        64
+        seed      0.861     0.838     0.849        74
 
-    accuracy                          0.888       267
-   macro avg      0.884     0.915     0.898       267
-weighted avg      0.888     0.888     0.887       267
+    accuracy                          0.894       245
+   macro avg      0.921     0.920     0.920       245
+weighted avg      0.894     0.894     0.894       245
 confusion (rows=true, cols=pred) ['seed', 'couscous', 'rice', 'noodle']
-[[75 10  2  0]
- [10 87  3  0]
- [ 1  2 63  2]
- [ 0  0  0 12]]
+[[62 12  0  0]
+ [10 82  2  0]
+ [ 0  2 62  0]
+ [ 0  0  0 13]]
 
-== size+colour_rf: 5-fold accuracy 0.959
+== size+colour_rf: 5-fold accuracy 0.967
               precision    recall  f1-score   support
 
-    couscous      0.961     0.980     0.970       100
-      noodle      0.857     1.000     0.923        12
-        rice      0.969     0.912     0.939        68
-        seed      0.966     0.966     0.966        87
+    couscous      0.968     0.968     0.968        94
+      noodle      1.000     1.000     1.000        13
+        rice      0.968     0.953     0.961        64
+        seed      0.960     0.973     0.966        74
 
-    accuracy                          0.959       267
-   macro avg      0.938     0.964     0.950       267
-weighted avg      0.960     0.959     0.959       267
+    accuracy                          0.967       245
+   macro avg      0.974     0.974     0.974       245
+weighted avg      0.967     0.967     0.967       245
 confusion (rows=true, cols=pred) ['seed', 'couscous', 'rice', 'noodle']
-[[84  2  1  0]
- [ 1 98  1  0]
- [ 2  2 62  2]
- [ 0  0  0 12]]
+[[72  2  0  0]
+ [ 1 91  2  0]
+ [ 2  1 61  0]
+ [ 0  0  0 13]]
 
 == chosen: size_rf
 == size rules (depth-3 tree, the 'virtual sieve'):
-|--- area_mm2 <= 52.11
-|   |--- area_mm2 <= 8.00
+|--- length_mm <= 11.26
+|   |--- area_mm2 <= 5.25
 |   |   |--- thickness_mm <= 1.27
 |   |   |   |--- class: seed
 |   |   |--- thickness_mm >  1.27
 |   |   |   |--- class: couscous
-|   |--- area_mm2 >  8.00
-|   |   |--- length_mm <= 11.66
+|   |--- area_mm2 >  5.25
+|   |   |--- length_mm <= 4.23
 |   |   |   |--- class: rice
-|   |   |--- length_mm >  11.66
-|   |   |   |--- class: seed
-|--- area_mm2 >  52.11
-|   |--- area_mm2 <= 225.54
-|   |   |--- class: noodle
-|   |--- area_mm2 >  225.54
-|   |   |--- area_mm2 <= 278.16
+|   |   |--- length_mm >  4.23
 |   |   |   |--- class: rice
-|   |   |--- area_mm2 >  278.16
-|   |   |   |--- class: rice
+|--- length_mm >  11.26
+|   |--- class: noodle

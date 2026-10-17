@@ -394,6 +394,12 @@ class TrayVision:
             keep = np.zeros((h, w), bool)
             keep[self.roi[1]:self.roi[3], self.roi[0]:self.roi[2]] = True
             self.exclude[~keep] = 255
+        if self.calib and self.cfg.get("ignore_circles_px"):   # static tray features, e.g. the moulded dot
+            w, h = self.calib["size"]
+            if self.exclude is None:
+                self.exclude = np.zeros((h, w), np.uint8)
+            for cx, cy, r in self.cfg["ignore_circles_px"]:
+                cv2.circle(self.exclude, (int(cx), int(cy)), int(r), 255, -1)
 
     @property
     def ppm(self):
@@ -427,6 +433,7 @@ class TrayVision:
         if not moved:
             return img, info
         info["shift_mm"] = round(float(np.hypot(M[0, 2], M[1, 2]) / self.ppm), 1)
+        info["M"] = M.round(6).tolist()          # camera -> calibration pose (for drawing back in camera view)
         return cv2.warpAffine(img, M, (img.shape[1], img.shape[0]), flags=cv2.INTER_LINEAR,
                               borderMode=cv2.BORDER_REPLICATE), info
 
@@ -548,7 +555,7 @@ def purity(result, fraction, screen_mm=None):
 
 
 # --------------------------------------------------------------------------- overlay
-def draw_overlay(rect, objs, result, cfg=None, highlight=None):
+def draw_overlay(rect, objs, result, cfg=None, highlight=None, bar=True):
     vis = rect.copy()
     H, W = vis.shape[:2]
     s = max(W, H) / 1500.0
@@ -578,6 +585,16 @@ def draw_overlay(rect, objs, result, cfg=None, highlight=None):
         label = f"{o['id'][-3:]} {o['class'][:6]} {o['length_mm']:.1f}x{o['width_mm']:.1f}"
         cv2.putText(vis, label, (x, max(y - 4, 10)), cv2.FONT_HERSHEY_SIMPLEX, fs, (0, 0, 0), th + 2)
         cv2.putText(vis, label, (x, max(y - 4, 10)), cv2.FONT_HERSHEY_SIMPLEX, fs, col, th)
+    if bar:
+        draw_summary(vis, result)
+    return vis
+
+
+def draw_summary(vis, result):
+    """Black info bar at the top: counts per category."""
+    H, W = vis.shape[:2]
+    s = max(W, H) / 1500.0
+    th = max(1, int(round(1.5 * s)))
     sm = result["summary"]
     lines = [f"n={sm['count']} pickable={sm['pickable']} purity={sm['purity']} ({sm['dominant_fraction']})  "
              f"[{result['classifier']}{'' if result['calibrated'] else ', UNCALIBRATED'}]",

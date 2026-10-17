@@ -23,6 +23,9 @@ import numpy as np
 import vision as V
 
 ROOT = os.path.dirname(os.path.abspath(__file__))
+# Generous physical length limits per category (mm). Blobs outside are artefacts in a single-food photo
+# (marker-paper slivers, piles), not label truth: e.g. a 10 mm "chia" is impossible.
+SANITY_LEN_MM = {"seed": (0.5, 3.0), "couscous": (0.8, 4.5), "rice": (3.0, 14.0), "noodle": (6.0, 60.0)}
 
 
 def make_marker_sheet(base, dpi=300):
@@ -151,7 +154,8 @@ def main():
                 areas = np.sort([o["area_mm2"] for o in good])
                 med = float(areas[np.searchsorted(np.cumsum(areas), areas.sum() / 2)])
                 for o in good:   # trick 1: free labels; drop debris (<1/4 dominant) and clumps (>3x)
-                    if med / 4 <= o["area_mm2"] <= med * 3:
+                    lo, hi = SANITY_LEN_MM.get(cls, (0, 1e9))
+                    if med / 4 <= o["area_mm2"] <= med * 3 and lo <= o["length_mm"] <= hi:
                         X.append([o[k] for k in V.FEATURES]); y.append(cls)
                     else:
                         dropped += 1
